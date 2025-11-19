@@ -29,6 +29,7 @@ OQS_SIG *OQS_SIG_slh_dsa_pure_shake_128s_new(void) {
 	sig->length_signature = OQS_SIG_slh_dsa_pure_shake_128s_length_signature;
 
 	sig->keypair = OQS_SIG_slh_dsa_pure_shake_128s_keypair;
+	sig->keypair_with_seed = NULL;
 	sig->sign = OQS_SIG_slh_dsa_pure_shake_128s_sign;
 	sig->verify = OQS_SIG_slh_dsa_pure_shake_128s_verify;
 	sig->sign_with_ctx_str = OQS_SIG_slh_dsa_pure_shake_128s_sign_with_ctx_str;

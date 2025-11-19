@@ -24,6 +24,7 @@ OQS_SIG *OQS_SIG_sphincs_shake_128s_simple_new(void) {
 	sig->length_signature = OQS_SIG_sphincs_shake_128s_simple_length_signature;
 
 	sig->keypair = OQS_SIG_sphincs_shake_128s_simple_keypair;
+	sig->keypair_with_seed = NULL;
 	sig->sign = OQS_SIG_sphincs_shake_128s_simple_sign;
 	sig->verify = OQS_SIG_sphincs_shake_128s_simple_verify;
 	sig->sign_with_ctx_str = OQS_SIG_sphincs_shake_128s_simple_sign_with_ctx_str;

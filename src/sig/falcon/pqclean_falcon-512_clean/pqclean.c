@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "api.h"
 #include "inner.h"
@@ -39,10 +40,16 @@
  *      (signature length is 1+len(value), not counting the nonce)
  */
 
-/* see api.h */
-int
-PQCLEAN_FALCON512_CLEAN_crypto_sign_keypair(
-    uint8_t *pk, uint8_t *sk) {
+
+/*
+ * Internal helper function that performs the actual key generation and encoding.
+ * Logic extracted from the original PQClean PQCLEAN_FALCON512_CLEAN_crypto_sign_keypair
+ * function.
+ * seed: 48-byte seed buffer. If NULL, random seed will be generated.
+ */
+static int
+do_keypair(
+    uint8_t *pk, uint8_t *sk, const uint8_t *seed) {
     union {
         uint8_t b[FALCON_KEYGEN_TEMP_9];
         uint64_t dummy_u64;
@@ -50,16 +57,22 @@ PQCLEAN_FALCON512_CLEAN_crypto_sign_keypair(
     } tmp;
     int8_t f[512], g[512], F[512];
     uint16_t h[512];
-    unsigned char seed[48];
+    unsigned char seed_buffer[48];
     inner_shake256_context rng;
     size_t u, v;
 
     /*
      * Generate key pair.
      */
-    randombytes(seed, sizeof seed);
+    if (seed != NULL) {
+        // Use provided 48-byte seed for deterministic key generation
+        memcpy(seed_buffer, seed, 48);
+    } else {
+        // Fallback to random seed if NULL (Original API)
+        randombytes(seed_buffer, sizeof seed_buffer);
+    }
     inner_shake256_init(&rng);
-    inner_shake256_inject(&rng, seed, sizeof seed);
+    inner_shake256_inject(&rng, seed_buffer, sizeof seed_buffer);
     inner_shake256_flip(&rng);
     PQCLEAN_FALCON512_CLEAN_keygen(&rng, f, g, F, NULL, h, 9, tmp.b);
     inner_shake256_ctx_release(&rng);
@@ -106,6 +119,21 @@ PQCLEAN_FALCON512_CLEAN_crypto_sign_keypair(
     }
 
     return 0;
+}
+
+
+/* see api.h */
+int
+PQCLEAN_FALCON512_CLEAN_crypto_sign_keypair_with_seed(
+    uint8_t *pk, uint8_t *sk, const uint8_t *seed) {
+    return do_keypair(pk, sk, seed);
+}
+
+/* see api.h */
+int
+PQCLEAN_FALCON512_CLEAN_crypto_sign_keypair(
+    uint8_t *pk, uint8_t *sk) {
+    return do_keypair(pk, sk, NULL);
 }
 
 /*
