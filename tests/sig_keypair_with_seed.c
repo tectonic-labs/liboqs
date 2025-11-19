@@ -362,7 +362,7 @@ int main(void) {
 
 	OQS_STATUS overall_result = OQS_SUCCESS;
 
-	// Test each Falcon variant
+	// Test each Falcon variant (Falcon-512 and Falcon-padded-512)
 	for (size_t i = 0; falcon_algorithms[i] != NULL; i++) {
 		const char *alg_name = falcon_algorithms[i];
 		
@@ -378,7 +378,7 @@ int main(void) {
 			fprintf(stderr, "FAILED: %s keypair_with_seed determinism test\n", alg_name);
 		}
 
-		// Test CLEAN vs AVX2 consistency (only for Falcon-512)
+		// Test CLEAN vs AVX2 consistency
 		OQS_STATUS rc2 = test_clean_vs_avx2_keypair_consistency(alg_name);
 		if (rc2 != OQS_SUCCESS) {
 			overall_result = OQS_ERROR;
