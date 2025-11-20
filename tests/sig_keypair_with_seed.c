@@ -239,10 +239,10 @@ static OQS_STATUS test_other_algorithms_return_error(void) {
 
 static OQS_STATUS test_clean_vs_avx2_keypair_consistency(const char *method_name) {
 #if !defined(OQS_ENABLE_SIG_falcon_512)
-	printf("[test_clean_vs_avx2] Falcon-512 not enabled, skipping...\n");
+	printf("[test_clean_vs_avx2] %s not enabled, skipping...\n", method_name);
 	return OQS_SUCCESS;
 #elif !defined(OQS_ENABLE_SIG_falcon_512_avx2)
-	printf("[test_clean_vs_avx2] Falcon-512 AVX2 not enabled, skipping...\n");
+	printf("[test_clean_vs_avx2] %s AVX2 not enabled, skipping...\n", method_name);
 	return OQS_SUCCESS;
 #else
 	uint8_t seed[48];
