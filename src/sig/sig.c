@@ -3067,13 +3067,13 @@ OQS_API OQS_STATUS OQS_SIG_keypair(const OQS_SIG *sig, uint8_t *public_key, uint
 	}
 }
 
-OQS_API OQS_STATUS OQS_SIG_keypair_with_seed(const OQS_SIG *sig, uint8_t *public_key, uint8_t *secret_key, const uint8_t *seed) {
+OQS_API OQS_STATUS OQS_SIG_keypair_from_seed(const OQS_SIG *sig, uint8_t *public_key, uint8_t *secret_key, const uint8_t *seed, size_t seed_len) {
 	// Check if the signature scheme supports keypair generation with seed
-	// Only schemes that support this function will have the keypair_with_seed function pointer set
-	if (sig == NULL || sig->keypair_with_seed == NULL) {
+	// Only schemes that support this function will have the keypair_from_seed function pointer set
+	if (sig == NULL || sig->keypair_from_seed == NULL) {
 		return OQS_ERROR;
 	}
-	if (sig->keypair_with_seed(public_key, secret_key, seed) != OQS_SUCCESS) {
+	if (sig->keypair_from_seed(public_key, secret_key, seed, seed_len) != OQS_SUCCESS) {
 		return OQS_ERROR;
 	}
 	return OQS_SUCCESS;
