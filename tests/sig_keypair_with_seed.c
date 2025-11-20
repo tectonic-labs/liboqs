@@ -180,41 +180,41 @@ static OQS_STATUS test_other_algorithms_return_error(void) {
 	// Test a few algorithms that don't support keypair_with_seed
 	const char *test_algorithms[] = {
 		"ML-DSA-44",
-		"ML-DSA-65", 
+		"ML-DSA-65",
 		"SPHINCS+-SHA2-128f-simple",
 		NULL  // Sentinel
 	};
-	
+
 	uint8_t dummy_seed[48] = {0};  // Dummy seed
-	
+
 	printf("\n================================================================================\n");
 	printf("Testing that other algorithms return error for keypair_with_seed\n");
 	printf("================================================================================\n");
-	
+
 	for (size_t i = 0; test_algorithms[i] != NULL; i++) {
 		const char *alg_name = test_algorithms[i];
 		OQS_SIG *sig = OQS_SIG_new(alg_name);
-		
+
 		if (sig == NULL) {
 			printf("[test_other_algorithms] %s not enabled, skipping...\n", alg_name);
 			continue;
 		}
-		
+
 		printf("Testing %s...\n", alg_name);
-		
+
 		// Allocate proper sizes
 		uint8_t *pk = OQS_MEM_malloc(sig->length_public_key);
 		uint8_t *sk = OQS_MEM_malloc(sig->length_secret_key);
-		
+
 		if (pk == NULL || sk == NULL) {
 			fprintf(stderr, "[test_other_algorithms] Memory allocation failed for %s\n", alg_name);
 			OQS_SIG_free(sig);
 			continue;
 		}
-		
+
 		// Test that keypair_with_seed returns error
 		OQS_STATUS rc = OQS_SIG_keypair_with_seed(sig, pk, sk, dummy_seed);
-		
+
 		if (rc == OQS_ERROR) {
 			printf("  ✓ %s correctly returns OQS_ERROR (as expected)\n", alg_name);
 		} else {
@@ -224,16 +224,16 @@ static OQS_STATUS test_other_algorithms_return_error(void) {
 			OQS_SIG_free(sig);
 			return OQS_ERROR;
 		}
-		
+
 		OQS_MEM_insecure_free(pk);
 		OQS_MEM_secure_free(sk, sig->length_secret_key);
 		OQS_SIG_free(sig);
 	}
-	
+
 	printf("\n================================================================================\n");
 	printf("SUCCESS: All other algorithms correctly return error for keypair_with_seed\n");
 	printf("================================================================================\n");
-	
+
 	return OQS_SUCCESS;
 }
 
@@ -363,7 +363,7 @@ int main(void) {
 	// Test each Falcon variant (Falcon-512 and Falcon-padded-512)
 	for (size_t i = 0; falcon_algorithms[i] != NULL; i++) {
 		const char *alg_name = falcon_algorithms[i];
-		
+
 		printf("\n\n");
 		printf("################################################################################\n");
 		printf("## Testing algorithm: %s\n", alg_name);

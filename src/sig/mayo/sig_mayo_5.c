@@ -23,7 +23,7 @@ OQS_SIG *OQS_SIG_mayo_5_new(void) {
 	sig->length_secret_key = OQS_SIG_mayo_5_length_secret_key;
 	sig->length_signature = OQS_SIG_mayo_5_length_signature;
 
-	sig->keypair = OQS_SIG_mayo_5_keypair;	
+	sig->keypair = OQS_SIG_mayo_5_keypair;
 	sig->keypair_with_seed = NULL;
 	sig->sign = OQS_SIG_mayo_5_sign;
 	sig->verify = OQS_SIG_mayo_5_verify;
