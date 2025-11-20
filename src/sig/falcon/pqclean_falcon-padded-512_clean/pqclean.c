@@ -40,11 +40,13 @@
  * Internal helper function that performs the actual key generation and encoding.
  * Logic extracted from the original PQClean PQCLEAN_FALCONPADDED512_CLEAN_crypto_sign_keypair
  * function.
- * seed: 48-byte seed buffer. If NULL, random seed will be generated.
+ * seed: seed for deterministic key generation. If NULL, uses random seed.
+ *       Caller must ensure seed points to at least 32 bytes.
+ * seed_len: length of the seed in bytes. Must be between 32 and 64.
  */
 static int
 do_keypair(
-    uint8_t *pk, uint8_t *sk, const uint8_t *seed) {
+    uint8_t *pk, uint8_t *sk, const uint8_t *seed, size_t seed_len) {
     union {
         uint8_t b[FALCON_KEYGEN_TEMP_9];
         uint64_t dummy_u64;
@@ -52,23 +54,30 @@ do_keypair(
     } tmp;
     int8_t f[512], g[512], F[512];
     uint16_t h[512];
-    unsigned char seed_buffer[48];
     inner_shake256_context rng;
     size_t u, v;
 
-    /*
-     * Generate key pair.
-     */
-    if (seed != NULL) {
-        // Use provided 48-byte seed for deterministic key generation
-        memcpy(seed_buffer, seed, 48);
+     /*
+      * Generate key pair.
+      */
+     if (seed != NULL) {
+        // Validate seed length - accept 32 to 64 bytes - throws error otherwise
+        if (seed_len < 32 || seed_len > 64) {
+            return -1;
+        }
+        inner_shake256_init(&rng);
+        inner_shake256_inject(&rng, seed, seed_len);
+        inner_shake256_flip(&rng);
     } else {
         // Fallback to random seed if NULL (Original API)
+        unsigned char seed_buffer[48];
         randombytes(seed_buffer, sizeof seed_buffer);
+        inner_shake256_init(&rng);
+        inner_shake256_inject(&rng, seed_buffer, sizeof seed_buffer);
+        inner_shake256_flip(&rng);
     }
-    inner_shake256_init(&rng);
-    inner_shake256_inject(&rng, seed_buffer, sizeof seed_buffer);
-    inner_shake256_flip(&rng);
+    
+    // Generate keypair using the initialized RNG
     PQCLEAN_FALCONPADDED512_CLEAN_keygen(&rng, f, g, F, NULL, h, 9, tmp.b);
     inner_shake256_ctx_release(&rng);
 
@@ -118,16 +127,16 @@ do_keypair(
 
 /* see api.h */
 int
-PQCLEAN_FALCONPADDED512_CLEAN_crypto_sign_keypair_with_seed(
-    uint8_t *pk, uint8_t *sk, const uint8_t *seed) {
-    return do_keypair(pk, sk, seed);
+PQCLEAN_FALCONPADDED512_CLEAN_crypto_sign_keypair_from_seed(
+    uint8_t *pk, uint8_t *sk, const uint8_t *seed, size_t seed_len) {
+    return do_keypair(pk, sk, seed, seed_len);
 }
 
 /* see api.h */
 int
 PQCLEAN_FALCONPADDED512_CLEAN_crypto_sign_keypair(
     uint8_t *pk, uint8_t *sk) {
-    return do_keypair(pk, sk, NULL);
+    return do_keypair(pk, sk, NULL, 0);
 }
 
 /*

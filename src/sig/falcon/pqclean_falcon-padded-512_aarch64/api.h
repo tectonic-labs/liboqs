@@ -27,13 +27,14 @@ int PQCLEAN_FALCONPADDED512_AARCH64_crypto_sign_keypair(
  *   public (pk): PQCLEAN_FALCONPADDED512_AARCH64_CRYPTO_PUBLICKEYBYTES
  *   private (sk): PQCLEAN_FALCONPADDED512_AARCH64_CRYPTO_SECRETKEYBYTES
  *
- * seed: 48-byte seed for deterministic key generation. If NULL, uses random seed.
- *       Caller must ensure seed points to at least 48 bytes.
+ * seed: seed for deterministic key generation. If NULL, uses random seed.
+ *       Caller must ensure seed points to at least 32 bytes.
+ * seed_len: length of the seed in bytes. Must be between 32 and 64.
  *
  * Return value: 0 on success, -1 on error.
  */
-int PQCLEAN_FALCONPADDED512_AARCH64_crypto_sign_keypair_with_seed(
-    uint8_t *pk, uint8_t *sk, const uint8_t *seed);
+int PQCLEAN_FALCONPADDED512_AARCH64_crypto_sign_keypair_from_seed(
+    uint8_t *pk, uint8_t *sk, const uint8_t *seed, size_t seed_len);
 
 /*
  * Compute a signature on a provided message (m, mlen), with a given

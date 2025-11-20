@@ -24,7 +24,7 @@ OQS_SIG *OQS_SIG_uov_ov_III_pkc_new(void) {
 	sig->length_signature = OQS_SIG_uov_ov_III_pkc_length_signature;
 
 	sig->keypair = OQS_SIG_uov_ov_III_pkc_keypair;
-	sig->keypair_with_seed = NULL;
+	sig->keypair_from_seed = NULL;
 	sig->sign = OQS_SIG_uov_ov_III_pkc_sign;
 	sig->verify = OQS_SIG_uov_ov_III_pkc_verify;
 	sig->sign_with_ctx_str = OQS_SIG_uov_ov_III_pkc_sign_with_ctx_str;

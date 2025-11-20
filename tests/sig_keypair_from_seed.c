@@ -20,13 +20,13 @@
 // Falcon 512
 #if defined(OQS_ENABLE_SIG_falcon_512)
 // Declare CLEAN implementation functions
-extern int PQCLEAN_FALCON512_CLEAN_crypto_sign_keypair_with_seed(uint8_t *pk, uint8_t *sk, const uint8_t *seed);
+extern int PQCLEAN_FALCON512_CLEAN_crypto_sign_keypair_from_seed(uint8_t *pk, uint8_t *sk, const uint8_t *seed, size_t seed_len);
 #define PQCLEAN_FALCON512_CLEAN_CRYPTO_PUBLICKEYBYTES 897
 #define PQCLEAN_FALCON512_CLEAN_CRYPTO_SECRETKEYBYTES 1281
 
 #if defined(OQS_ENABLE_SIG_falcon_512_avx2)
 // Declare AVX2 implementation functions
-extern int PQCLEAN_FALCON512_AVX2_crypto_sign_keypair_with_seed(uint8_t *pk, uint8_t *sk, const uint8_t *seed);
+extern int PQCLEAN_FALCON512_AVX2_crypto_sign_keypair_from_seed(uint8_t *pk, uint8_t *sk, const uint8_t *seed, size_t seed_len);
 #define PQCLEAN_FALCON512_AVX2_CRYPTO_PUBLICKEYBYTES 897
 #define PQCLEAN_FALCON512_AVX2_CRYPTO_SECRETKEYBYTES 1281
 #endif
@@ -35,19 +35,19 @@ extern int PQCLEAN_FALCON512_AVX2_crypto_sign_keypair_with_seed(uint8_t *pk, uin
 // FAlcon padded 512
 #if defined(OQS_ENABLE_SIG_falcon_padded_512)
 // Declare CLEAN implementation functions
-extern int PQCLEAN_FALCONPADDED512_CLEAN_crypto_sign_keypair_with_seed(uint8_t *pk, uint8_t *sk, const uint8_t *seed);
+extern int PQCLEAN_FALCONPADDED512_CLEAN_crypto_sign_keypair_from_seed(uint8_t *pk, uint8_t *sk, const uint8_t *seed, size_t seed_len);
 #define PQCLEAN_FALCONPADDED512_CLEAN_CRYPTO_PUBLICKEYBYTES 897
 #define PQCLEAN_FALCONPADDED512_CLEAN_CRYPTO_SECRETKEYBYTES 1281
 
 #if defined(OQS_ENABLE_SIG_falcon_padded_512_avx2)
 // Declare AVX2 implementation functions
-extern int PQCLEAN_FALCONPADDED512_AVX2_crypto_sign_keypair_with_seed(uint8_t *pk, uint8_t *sk, const uint8_t *seed);
+extern int PQCLEAN_FALCONPADDED512_AVX2_crypto_sign_keypair_from_seed(uint8_t *pk, uint8_t *sk, const uint8_t *seed, size_t seed_len);
 #define PQCLEAN_FALCONPADDED512_AVX2_CRYPTO_PUBLICKEYBYTES 897
 #define PQCLEAN_FALCONPADDED512_AVX2_CRYPTO_SECRETKEYBYTES 1281
 #endif
 #endif
 
-static OQS_STATUS test_keypair_with_seed_twice(const char *method_name) {
+static OQS_STATUS test_keypair_from_seed_twice(const char *method_name) {
 	OQS_SIG *sig = NULL;
 	uint8_t *public_key1 = NULL;
 	uint8_t *secret_key1 = NULL;
@@ -65,9 +65,9 @@ static OQS_STATUS test_keypair_with_seed_twice(const char *method_name) {
 		return OQS_ERROR;
 	}
 
-	// Check if keypair_with_seed is available
-	if (sig->keypair_with_seed == NULL) {
-		fprintf(stderr, "[test_keypair_seeded_twice] %s does not support keypair_with_seed.\n", method_name);
+	// Check if keypair_from_seed is available
+	if (sig->keypair_from_seed == NULL) {
+		fprintf(stderr, "[test_keypair_seeded_twice] %s does not support keypair_from_seed.\n", method_name);
 		OQS_SIG_free(sig);
 		return OQS_ERROR;
 	}
@@ -106,7 +106,7 @@ static OQS_STATUS test_keypair_with_seed_twice(const char *method_name) {
 	OQS_randombytes(seed, 48);
 
 	printf("================================================================================\n");
-	printf("Testing %s keypair_with_seed determinism\n", method_name);
+	printf("Testing %s keypair_from_seed determinism\n", method_name);
 	printf("Version source: %s\n", sig->alg_version);
 	printf("================================================================================\n");
 	printf("Generated seed (48 bytes):\n");
@@ -117,18 +117,18 @@ static OQS_STATUS test_keypair_with_seed_twice(const char *method_name) {
 
 	// First keypair generation
 	printf("Generating first keypair with seed...\n");
-	rc = OQS_SIG_keypair_with_seed(sig, public_key1, secret_key1, seed);
+	rc = OQS_SIG_keypair_from_seed(sig, public_key1, secret_key1, seed, 48);
 	if (rc != OQS_SUCCESS) {
-		fprintf(stderr, "[test_keypair_seeded_twice] First OQS_SIG_keypair_with_seed failed\n");
+		fprintf(stderr, "[test_keypair_seeded_twice] First OQS_SIG_keypair_from_seed failed\n");
 		goto err;
 	}
 	printf("First keypair generated successfully.\n\n");
 
 	// Second keypair generation with the same seed
 	printf("Generating second keypair with same seed...\n");
-	rc = OQS_SIG_keypair_with_seed(sig, public_key2, secret_key2, seed);
+	rc = OQS_SIG_keypair_from_seed(sig, public_key2, secret_key2, seed, 48);
 	if (rc != OQS_SUCCESS) {
-		fprintf(stderr, "[test_keypair_seeded_twice] Second OQS_SIG_keypair_with_seed failed\n");
+		fprintf(stderr, "[test_keypair_seeded_twice] Second OQS_SIG_keypair_from_seed failed\n");
 		goto err;
 	}
 	printf("Second keypair generated successfully.\n\n");
@@ -152,7 +152,7 @@ static OQS_STATUS test_keypair_with_seed_twice(const char *method_name) {
 	}
 
 	printf("\n================================================================================\n");
-	printf("SUCCESS: Both keypairs are identical - keypair_with_seed is deterministic!\n");
+	printf("SUCCESS: Both keypairs are identical - keypair_from_seed is deterministic!\n");
 	printf("================================================================================\n");
 
 	// Cleanup
@@ -177,7 +177,7 @@ err:
 }
 
 static OQS_STATUS test_other_algorithms_return_error(void) {
-	// Test a few algorithms that don't support keypair_with_seed
+	// Test a few algorithms that don't support keypair_from_seed
 	const char *test_algorithms[] = {
 		"ML-DSA-44",
 		"ML-DSA-65",
@@ -188,7 +188,7 @@ static OQS_STATUS test_other_algorithms_return_error(void) {
 	uint8_t dummy_seed[48] = {0};  // Dummy seed
 
 	printf("\n================================================================================\n");
-	printf("Testing that other algorithms return error for keypair_with_seed\n");
+	printf("Testing that other algorithms return error for keypair_from_seed\n");
 	printf("================================================================================\n");
 
 	for (size_t i = 0; test_algorithms[i] != NULL; i++) {
@@ -212,8 +212,8 @@ static OQS_STATUS test_other_algorithms_return_error(void) {
 			continue;
 		}
 
-		// Test that keypair_with_seed returns error
-		OQS_STATUS rc = OQS_SIG_keypair_with_seed(sig, pk, sk, dummy_seed);
+		// Test that keypair_from_seed returns error
+		OQS_STATUS rc = OQS_SIG_keypair_from_seed(sig, pk, sk, dummy_seed, 48);
 
 		if (rc == OQS_ERROR) {
 			printf("  ✓ %s correctly returns OQS_ERROR (as expected)\n", alg_name);
@@ -231,7 +231,7 @@ static OQS_STATUS test_other_algorithms_return_error(void) {
 	}
 
 	printf("\n================================================================================\n");
-	printf("SUCCESS: All other algorithms correctly return error for keypair_with_seed\n");
+	printf("SUCCESS: All other algorithms correctly return error for keypair_from_seed\n");
 	printf("================================================================================\n");
 
 	return OQS_SUCCESS;
@@ -281,7 +281,7 @@ static OQS_STATUS test_clean_vs_avx2_keypair_consistency(const char *method_name
 
 	// Generate keypair using CLEAN implementation
 	printf("Generating keypair with CLEAN implementation...\n");
-	rc_clean = PQCLEAN_FALCON512_CLEAN_crypto_sign_keypair_with_seed(pk_clean, sk_clean, seed);
+	rc_clean = PQCLEAN_FALCON512_CLEAN_crypto_sign_keypair_from_seed(pk_clean, sk_clean, seed, 48);
 	if (rc_clean != 0) {
 		fprintf(stderr, "[test_clean_vs_avx2] CLEAN keypair generation failed (returned %d)\n", rc_clean);
 		OQS_KAT_PRNG_free(prng);
@@ -291,7 +291,7 @@ static OQS_STATUS test_clean_vs_avx2_keypair_consistency(const char *method_name
 
 	// Generate keypair using AVX2 implementation
 	printf("Generating keypair with AVX2 implementation...\n");
-	rc_avx2 = PQCLEAN_FALCON512_AVX2_crypto_sign_keypair_with_seed(pk_avx2, sk_avx2, seed);
+	rc_avx2 = PQCLEAN_FALCON512_AVX2_crypto_sign_keypair_from_seed(pk_avx2, sk_avx2, seed, 48);
 	if (rc_avx2 != 0) {
 		fprintf(stderr, "[test_clean_vs_avx2] AVX2 keypair generation failed (returned %d)\n", rc_avx2);
 		OQS_KAT_PRNG_free(prng);
@@ -369,11 +369,11 @@ int main(void) {
 		printf("## Testing algorithm: %s\n", alg_name);
 		printf("################################################################################\n\n");
 
-		// Test keypair_with_seed twice
-		OQS_STATUS rc1 = test_keypair_with_seed_twice(alg_name);
+		// Test keypair_from_seed twice
+		OQS_STATUS rc1 = test_keypair_from_seed_twice(alg_name);
 		if (rc1 != OQS_SUCCESS) {
 			overall_result = OQS_ERROR;
-			fprintf(stderr, "FAILED: %s keypair_with_seed determinism test\n", alg_name);
+			fprintf(stderr, "FAILED: %s keypair_from_seed determinism test\n", alg_name);
 		}
 
 		// Test CLEAN vs AVX2 consistency

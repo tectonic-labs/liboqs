@@ -24,7 +24,7 @@ OQS_SIG *OQS_SIG_falcon_512_new(void) {
 	sig->length_signature = OQS_SIG_falcon_512_length_signature;
 
 	sig->keypair = OQS_SIG_falcon_512_keypair;
-	sig->keypair_with_seed = OQS_SIG_falcon_512_keypair_with_seed;
+	sig->keypair_from_seed = OQS_SIG_falcon_512_keypair_from_seed;
 	sig->sign = OQS_SIG_falcon_512_sign;
 	sig->verify = OQS_SIG_falcon_512_verify;
 	sig->sign_with_ctx_str = OQS_SIG_falcon_512_sign_with_ctx_str;
@@ -34,20 +34,20 @@ OQS_SIG *OQS_SIG_falcon_512_new(void) {
 }
 
 extern int PQCLEAN_FALCON512_CLEAN_crypto_sign_keypair(uint8_t *pk, uint8_t *sk);
-extern int PQCLEAN_FALCON512_CLEAN_crypto_sign_keypair_with_seed(uint8_t *pk, uint8_t *sk, const uint8_t *seed);
+extern int PQCLEAN_FALCON512_CLEAN_crypto_sign_keypair_from_seed(uint8_t *pk, uint8_t *sk, const uint8_t *seed, size_t seed_len);
 extern int PQCLEAN_FALCON512_CLEAN_crypto_sign_signature(uint8_t *sig, size_t *siglen, const uint8_t *m, size_t mlen, const uint8_t *sk);
 extern int PQCLEAN_FALCON512_CLEAN_crypto_sign_verify(const uint8_t *sig, size_t siglen, const uint8_t *m, size_t mlen, const uint8_t *pk);
 
 #if defined(OQS_ENABLE_SIG_falcon_512_avx2)
 extern int PQCLEAN_FALCON512_AVX2_crypto_sign_keypair(uint8_t *pk, uint8_t *sk);
-extern int PQCLEAN_FALCON512_AVX2_crypto_sign_keypair_with_seed(uint8_t *pk, uint8_t *sk, const uint8_t *seed);
+extern int PQCLEAN_FALCON512_AVX2_crypto_sign_keypair_from_seed(uint8_t *pk, uint8_t *sk, const uint8_t *seed, size_t seed_len);
 extern int PQCLEAN_FALCON512_AVX2_crypto_sign_signature(uint8_t *sig, size_t *siglen, const uint8_t *m, size_t mlen, const uint8_t *sk);
 extern int PQCLEAN_FALCON512_AVX2_crypto_sign_verify(const uint8_t *sig, size_t siglen, const uint8_t *m, size_t mlen, const uint8_t *pk);
 #endif
 
 #if defined(OQS_ENABLE_SIG_falcon_512_aarch64)
 extern int PQCLEAN_FALCON512_AARCH64_crypto_sign_keypair(uint8_t *pk, uint8_t *sk);
-extern int PQCLEAN_FALCON512_AARCH64_crypto_sign_keypair_with_seed(uint8_t *pk, uint8_t *sk, const uint8_t *seed);
+extern int PQCLEAN_FALCON512_AARCH64_crypto_sign_keypair_from_seed(uint8_t *pk, uint8_t *sk, const uint8_t *seed, size_t seed_len);
 extern int PQCLEAN_FALCON512_AARCH64_crypto_sign_signature(uint8_t *sig, size_t *siglen, const uint8_t *m, size_t mlen, const uint8_t *sk);
 extern int PQCLEAN_FALCON512_AARCH64_crypto_sign_verify(const uint8_t *sig, size_t siglen, const uint8_t *m, size_t mlen, const uint8_t *pk);
 #endif
@@ -78,29 +78,29 @@ OQS_API OQS_STATUS OQS_SIG_falcon_512_keypair(uint8_t *public_key, uint8_t *secr
 #endif
 }
 
-OQS_API OQS_STATUS OQS_SIG_falcon_512_keypair_with_seed(uint8_t *public_key, uint8_t *secret_key, const uint8_t *seed) {
+OQS_API OQS_STATUS OQS_SIG_falcon_512_keypair_from_seed(uint8_t *public_key, uint8_t *secret_key, const uint8_t *seed, size_t seed_len) {
 #if defined(OQS_ENABLE_SIG_falcon_512_avx2)
 #if defined(OQS_DIST_BUILD)
 	if (OQS_CPU_has_extension(OQS_CPU_EXT_AVX2)) {
 #endif /* OQS_DIST_BUILD */
-		return (OQS_STATUS) PQCLEAN_FALCON512_AVX2_crypto_sign_keypair_with_seed(public_key, secret_key, seed);
+		return (OQS_STATUS) PQCLEAN_FALCON512_AVX2_crypto_sign_keypair_from_seed(public_key, secret_key, seed, seed_len);
 #if defined(OQS_DIST_BUILD)
 	} else {
-		return (OQS_STATUS) PQCLEAN_FALCON512_CLEAN_crypto_sign_keypair_with_seed(public_key, secret_key, seed);
+		return (OQS_STATUS) PQCLEAN_FALCON512_CLEAN_crypto_sign_keypair_from_seed(public_key, secret_key, seed, seed_len);
 	}
 #endif /* OQS_DIST_BUILD */
 #elif defined(OQS_ENABLE_SIG_falcon_512_aarch64)
 #if defined(OQS_DIST_BUILD)
 	if (OQS_CPU_has_extension(OQS_CPU_EXT_ARM_NEON)) {
 #endif /* OQS_DIST_BUILD */
-		return (OQS_STATUS) PQCLEAN_FALCON512_AARCH64_crypto_sign_keypair_with_seed(public_key, secret_key, seed);
+		return (OQS_STATUS) PQCLEAN_FALCON512_AARCH64_crypto_sign_keypair_from_seed(public_key, secret_key, seed, seed_len);
 #if defined(OQS_DIST_BUILD)
 	} else {
-		return (OQS_STATUS) PQCLEAN_FALCON512_CLEAN_crypto_sign_keypair_with_seed(public_key, secret_key, seed);
+		return (OQS_STATUS) PQCLEAN_FALCON512_CLEAN_crypto_sign_keypair_from_seed(public_key, secret_key, seed, seed_len);
 	}
 #endif /* OQS_DIST_BUILD */
 #else
-	return (OQS_STATUS) PQCLEAN_FALCON512_CLEAN_crypto_sign_keypair_with_seed(public_key, secret_key, seed);
+	return (OQS_STATUS) PQCLEAN_FALCON512_CLEAN_crypto_sign_keypair_from_seed(public_key, secret_key, seed, seed_len);
 #endif
 }
 

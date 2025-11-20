@@ -127,8 +127,8 @@ if(OQS_BUILD_FUZZ_TESTS AND '${CMAKE_C_COMPILER_ID}' STREQUAL 'Clang')
 endif()
 
 # KeyGen-with-seed API tests
-add_executable(sig_keypair_with_seed sig_keypair_with_seed.c test_helpers.c)
-target_link_libraries(sig_keypair_with_seed PRIVATE ${TEST_DEPS})
+add_executable(sig_keypair_from_seed sig_keypair_from_seed.c test_helpers.c)
+target_link_libraries(sig_keypair_from_seed PRIVATE ${TEST_DEPS})
 
 # Stateful SIG API tests
 add_executable(example_sig_stfl example_sig_stfl.c)
@@ -174,7 +174,7 @@ add_executable(speed_sig speed_sig.c)
 target_link_libraries(speed_sig PRIVATE ${TEST_DEPS})
 
 
-set(SIG_TESTS example_sig kat_sig test_sig test_sig_mem speed_sig vectors_sig sig_keypair_with_seed)
+set(SIG_TESTS example_sig kat_sig test_sig test_sig_mem speed_sig vectors_sig sig_keypair_from_seed)
 
 # SIG_STFL API tests
 add_executable(test_sig_stfl test_sig_stfl.c test_helpers.c)
