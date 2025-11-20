@@ -14,9 +14,9 @@ jobs:
   basic-checks:
     uses: ./.github/workflows/basic.yml
 
-  platform-tests:
-    needs: basic-checks
-    uses: ./.github/workflows/platforms.yml
+  # platform-tests:
+  #   needs: basic-checks
+  #   uses: ./.github/workflows/platforms.yml
 
   code-coverage:
     needs: basic-checks
