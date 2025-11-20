@@ -186,8 +186,6 @@ static OQS_STATUS test_other_algorithms_return_error(void) {
 	};
 	
 	uint8_t dummy_seed[48] = {0};  // Dummy seed
-	uint8_t dummy_pk[2048];  // Large enough for any algorithm
-	uint8_t dummy_sk[4096];  // Large enough for any algorithm
 	
 	printf("\n================================================================================\n");
 	printf("Testing that other algorithms return error for keypair_with_seed\n");
