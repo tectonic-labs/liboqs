@@ -567,6 +567,21 @@ typedef struct OQS_SIG {
 	OQS_STATUS (*keypair)(uint8_t *public_key, uint8_t *secret_key);
 
 	/**
+	 * Keypair generation algorithm with seed.
+	 *
+	 * Caller is responsible for allocating sufficient memory for `public_key` and
+	 * `secret_key`, based on the `length_*` members in this object or the per-scheme
+	 * compile-time macros `OQS_SIG_*_length_*`.
+	 *
+	 * @param[out] public_key The public key represented as a byte string.
+	 * @param[out] secret_key The secret key represented as a byte string.
+	 * @param[in] seed The seed represented as a byte string.
+	 * @param[in] seed_len The length of the seed.
+	 * @return OQS_SUCCESS or OQS_ERROR
+	 */
+	OQS_STATUS (*keypair_from_seed)(uint8_t *public_key, uint8_t *secret_key, const uint8_t *seed, size_t seed_len);
+
+	/**
 	 * Signature generation algorithm.
 	 *
 	 * Caller is responsible for allocating sufficient memory for `signature`,
@@ -653,6 +668,22 @@ OQS_API OQS_SIG *OQS_SIG_new(const char *method_name);
  * @return OQS_SUCCESS or OQS_ERROR
  */
 OQS_API OQS_STATUS OQS_SIG_keypair(const OQS_SIG *sig, uint8_t *public_key, uint8_t *secret_key);
+
+/**
+ * Keypair generation algorithm from a seed for deterministic key generation.
+ *
+ * Caller is responsible for allocating sufficient memory for `public_key` and
+ * `secret_key`, based on the `length_*` members in this object or the per-scheme
+ * compile-time macros `OQS_SIG_*_length_*`.
+ *
+ * @param[in] sig The OQS_SIG object representing the signature scheme.
+ * @param[out] public_key The public key represented as a byte string.
+ * @param[out] secret_key The secret key represented as a byte string.
+ * @param[in] seed The seed for deterministic key generation (48 bytes). If NULL, falls back to OQS_SIG_keypair (randomized keygen) for algorithms that do not support deterministic keygen.
+ * @param[in] seed_len The length of the seed.
+ * @return OQS_SUCCESS or OQS_ERROR
+ */
+OQS_API OQS_STATUS OQS_SIG_keypair_from_seed(const OQS_SIG *sig, uint8_t *public_key, uint8_t *secret_key, const uint8_t *seed, size_t seed_len);
 
 /**
  * Signature generation algorithm.

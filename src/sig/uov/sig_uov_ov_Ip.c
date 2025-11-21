@@ -24,6 +24,7 @@ OQS_SIG *OQS_SIG_uov_ov_Ip_new(void) {
 	sig->length_signature = OQS_SIG_uov_ov_Ip_length_signature;
 
 	sig->keypair = OQS_SIG_uov_ov_Ip_keypair;
+	sig->keypair_from_seed = NULL;
 	sig->sign = OQS_SIG_uov_ov_Ip_sign;
 	sig->verify = OQS_SIG_uov_ov_Ip_verify;
 	sig->sign_with_ctx_str = OQS_SIG_uov_ov_Ip_sign_with_ctx_str;

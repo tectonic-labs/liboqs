@@ -3067,6 +3067,18 @@ OQS_API OQS_STATUS OQS_SIG_keypair(const OQS_SIG *sig, uint8_t *public_key, uint
 	}
 }
 
+OQS_API OQS_STATUS OQS_SIG_keypair_from_seed(const OQS_SIG *sig, uint8_t *public_key, uint8_t *secret_key, const uint8_t *seed, size_t seed_len) {
+	// Check if the signature scheme supports keypair generation with seed
+	// Only schemes that support this function will have the keypair_from_seed function pointer set
+	if (sig == NULL || sig->keypair_from_seed == NULL) {
+		return OQS_ERROR;
+	}
+	if (sig->keypair_from_seed(public_key, secret_key, seed, seed_len) != OQS_SUCCESS) {
+		return OQS_ERROR;
+	}
+	return OQS_SUCCESS;
+}
+
 OQS_API OQS_STATUS OQS_SIG_sign(const OQS_SIG *sig, uint8_t *signature, size_t *signature_len, const uint8_t *message, size_t message_len, const uint8_t *secret_key) {
 	if (sig == NULL || sig->sign(signature, signature_len, message, message_len, secret_key) != OQS_SUCCESS) {
 		return OQS_ERROR;

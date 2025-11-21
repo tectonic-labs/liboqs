@@ -24,6 +24,7 @@ OQS_SIG *OQS_SIG_snova_SNOVA_24_5_4_SHAKE_esk_new(void) {
 	sig->length_signature = OQS_SIG_snova_SNOVA_24_5_4_SHAKE_esk_length_signature;
 
 	sig->keypair = OQS_SIG_snova_SNOVA_24_5_4_SHAKE_esk_keypair;
+	sig->keypair_from_seed = NULL;
 	sig->sign = OQS_SIG_snova_SNOVA_24_5_4_SHAKE_esk_sign;
 	sig->verify = OQS_SIG_snova_SNOVA_24_5_4_SHAKE_esk_verify;
 	sig->sign_with_ctx_str = OQS_SIG_snova_SNOVA_24_5_4_SHAKE_esk_sign_with_ctx_str;
