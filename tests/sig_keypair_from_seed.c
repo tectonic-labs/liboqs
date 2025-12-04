@@ -391,7 +391,7 @@ int main(void) {
 		overall_result = OQS_ERROR;
 		fprintf(stderr, "FAILED: Falcon-512 CLEAN vs AVX2 consistency test\n");
 	}
-	
+
 	// Test other algorithms (should return error)
 	OQS_STATUS rc_other = test_other_algorithms_return_error();
 	if (rc_other != OQS_SUCCESS) {
