@@ -52,18 +52,21 @@ static inline void polyvec_matrix_expand_row(polyvecl **row, polyvecl buf[2], co
 }
 
 /*************************************************
-* Name:        crypto_sign_keypair
+* Name:        crypto_sign_keypair_internal
 *
-* Description: Generates public and private key.
+* Description: Generates public and private key from a seed. Internal API.
 *
 * Arguments:   - uint8_t *pk: pointer to output public key (allocated
 *                             array of CRYPTO_PUBLICKEYBYTES bytes)
 *              - uint8_t *sk: pointer to output private key (allocated
 *                             array of CRYPTO_SECRETKEYBYTES bytes)
+*              - const uint8_t *seed: pointer to seed (allocated
+*                             array of SEEDBYTES bytes)
+*              - size_t seed_len: length of seed
 *
 * Returns 0 (success)
 **************************************************/
-int crypto_sign_keypair(uint8_t *pk, uint8_t *sk) {
+int crypto_sign_keypair_internal(uint8_t *pk, uint8_t *sk, const uint8_t *seed, size_t seed_len) {
   unsigned int i;
   uint8_t seedbuf[2*SEEDBYTES + CRHBYTES];
   const uint8_t *rho, *rhoprime, *key;
@@ -73,7 +76,14 @@ int crypto_sign_keypair(uint8_t *pk, uint8_t *sk) {
   poly t1, t0;
 
   /* Get randomness for rho, rhoprime and key */
-  randombytes(seedbuf, SEEDBYTES);
+  if (seed != NULL) {
+    if (seed_len != SEEDBYTES) {
+      return -1;
+    }
+    memcpy(seedbuf, seed, SEEDBYTES);
+  } else {
+    randombytes(seedbuf, SEEDBYTES);
+  }
   seedbuf[SEEDBYTES+0] = K;
   seedbuf[SEEDBYTES+1] = L;
   shake256(seedbuf, 2*SEEDBYTES + CRHBYTES, seedbuf, SEEDBYTES+2);
@@ -134,6 +144,41 @@ int crypto_sign_keypair(uint8_t *pk, uint8_t *sk) {
   shake256(sk + 2*SEEDBYTES, TRBYTES, pk, CRYPTO_PUBLICKEYBYTES);
 
   return 0;
+}
+
+/*************************************************
+* Name:        crypto_sign_keypair
+*
+* Description: Generates public and private key.
+*
+* Arguments:   - uint8_t *pk: pointer to output public key (allocated
+*                             array of CRYPTO_PUBLICKEYBYTES bytes)
+*              - uint8_t *sk: pointer to output private key (allocated
+*                             array of CRYPTO_SECRETKEYBYTES bytes)
+**************************************************/
+int crypto_sign_keypair(
+  uint8_t *pk, uint8_t *sk) {
+  return crypto_sign_keypair_internal(pk, sk, NULL, 0);
+}
+
+/*************************************************
+* Name:        crypto_sign_keypair_from_seed
+*
+* Description: Generates public and private key from a seed.
+*
+* Arguments:   - uint8_t *pk: pointer to output public key (allocated
+*                             array of CRYPTO_PUBLICKEYBYTES bytes)
+*              - uint8_t *sk: pointer to output private key (allocated
+*                             array of CRYPTO_SECRETKEYBYTES bytes)
+*              - const uint8_t *seed: pointer to seed (allocated
+*                             array of SEEDBYTES bytes)
+*              - size_t seed_len: length of seed
+*
+* Returns 0 (success)
+**************************************************/
+int crypto_sign_keypair_from_seed(
+  uint8_t *pk, uint8_t *sk, const uint8_t *seed, size_t seed_len) {
+  return crypto_sign_keypair_internal(pk, sk, seed, seed_len);
 }
 
 /*************************************************

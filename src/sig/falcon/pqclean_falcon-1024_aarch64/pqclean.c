@@ -39,10 +39,17 @@
  *      (signature length is 1+len(value), not counting the nonce)
  */
 
-/* see api.h */
-int
-PQCLEAN_FALCON1024_AARCH64_crypto_sign_keypair(
-    uint8_t *pk, uint8_t *sk) {
+/*
+ * Internal helper function that performs the actual key generation and encoding.
+ * Logic extracted from the original PQClean PQCLEAN_FALCON1024_AARCH64_crypto_sign_keypair
+ * function.
+ * seed: seed for deterministic key generation. If NULL, uses random seed.
+ *       Caller must ensure seed points to at least 32 bytes.
+ * seed_len: length of the seed in bytes. Must be between 32 and 64.
+ */
+static int
+do_keypair(
+    uint8_t *pk, uint8_t *sk, const uint8_t *seed, size_t seed_len) {
     union {
         uint8_t b[28 * FALCON_N];
         uint64_t dummy_u64;
@@ -50,17 +57,30 @@ PQCLEAN_FALCON1024_AARCH64_crypto_sign_keypair(
     } tmp;
     int8_t f[FALCON_N], g[FALCON_N], F[FALCON_N];
     uint16_t h[FALCON_N];
-    unsigned char seed[48];
     inner_shake256_context rng;
     size_t u, v;
 
     /*
      * Generate key pair.
      */
-    randombytes(seed, sizeof seed);
-    inner_shake256_init(&rng);
-    inner_shake256_inject(&rng, seed, sizeof seed);
-    inner_shake256_flip(&rng);
+    if (seed != NULL) {
+        // Validate seed length - accept 32 to 64 bytes - throws error otherwise
+        if (seed_len < 32 || seed_len > 64) {
+            return -1;
+        }
+        inner_shake256_init(&rng);
+        inner_shake256_inject(&rng, seed, seed_len);
+        inner_shake256_flip(&rng);
+    } else {
+        // Fallback to random seed if NULL (Original API)
+        unsigned char seed_buffer[48];
+        randombytes(seed_buffer, sizeof seed_buffer);
+        inner_shake256_init(&rng);
+        inner_shake256_inject(&rng, seed_buffer, sizeof seed_buffer);
+        inner_shake256_flip(&rng);
+    }
+    
+    // Generate keypair using the initialized RNG
     PQCLEAN_FALCON1024_AARCH64_keygen(&rng, f, g, F, NULL, h, FALCON_LOGN, tmp.b);
     inner_shake256_ctx_release(&rng);
 
@@ -106,6 +126,20 @@ PQCLEAN_FALCON1024_AARCH64_crypto_sign_keypair(
     }
 
     return 0;
+}
+
+/* see api.h */
+int
+PQCLEAN_FALCON1024_AARCH64_crypto_sign_keypair_from_seed(
+    uint8_t *pk, uint8_t *sk, const uint8_t *seed, size_t seed_len) {
+    return do_keypair(pk, sk, seed, seed_len);
+}
+
+/* see api.h */
+int
+PQCLEAN_FALCON1024_AARCH64_crypto_sign_keypair(
+    uint8_t *pk, uint8_t *sk) {
+    return do_keypair(pk, sk, NULL, 0);
 }
 
 /*

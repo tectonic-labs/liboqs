@@ -24,7 +24,7 @@ OQS_SIG *OQS_SIG_ml_dsa_65_new(void) {
 	sig->length_signature = OQS_SIG_ml_dsa_65_length_signature;
 
 	sig->keypair = OQS_SIG_ml_dsa_65_keypair;
-	sig->keypair_from_seed = NULL;
+	sig->keypair_from_seed = OQS_SIG_ml_dsa_65_keypair_from_seed;
 	sig->sign = OQS_SIG_ml_dsa_65_sign;
 	sig->verify = OQS_SIG_ml_dsa_65_verify;
 	sig->sign_with_ctx_str = OQS_SIG_ml_dsa_65_sign_with_ctx_str;
@@ -34,11 +34,13 @@ OQS_SIG *OQS_SIG_ml_dsa_65_new(void) {
 }
 
 extern int pqcrystals_ml_dsa_65_ref_keypair(uint8_t *pk, uint8_t *sk);
+extern int pqcrystals_ml_dsa_65_ref_keypair_from_seed(uint8_t *pk, uint8_t *sk, const uint8_t *seed, size_t seed_len);
 extern int pqcrystals_ml_dsa_65_ref_signature(uint8_t *sig, size_t *siglen, const uint8_t *m, size_t mlen, const uint8_t *ctx, size_t ctxlen, const uint8_t *sk);
 extern int pqcrystals_ml_dsa_65_ref_verify(const uint8_t *sig, size_t siglen, const uint8_t *m, size_t mlen, const uint8_t *ctx, size_t ctxlen, const uint8_t *pk);
 
 #if defined(OQS_ENABLE_SIG_ml_dsa_65_avx2)
 extern int pqcrystals_ml_dsa_65_avx2_keypair(uint8_t *pk, uint8_t *sk);
+extern int pqcrystals_ml_dsa_65_avx2_keypair_from_seed(uint8_t *pk, uint8_t *sk, const uint8_t *seed, size_t seed_len);
 extern int pqcrystals_ml_dsa_65_avx2_signature(uint8_t *sig, size_t *siglen, const uint8_t *m, size_t mlen, const uint8_t *ctx, size_t ctxlen, const uint8_t *sk);
 extern int pqcrystals_ml_dsa_65_avx2_verify(const uint8_t *sig, size_t siglen, const uint8_t *m, size_t mlen, const uint8_t *ctx, size_t ctxlen, const uint8_t *pk);
 #endif
@@ -56,6 +58,22 @@ OQS_API OQS_STATUS OQS_SIG_ml_dsa_65_keypair(uint8_t *public_key, uint8_t *secre
 #endif /* OQS_DIST_BUILD */
 #else
 	return (OQS_STATUS) pqcrystals_ml_dsa_65_ref_keypair(public_key, secret_key);
+#endif
+}
+
+OQS_API OQS_STATUS OQS_SIG_ml_dsa_65_keypair_from_seed(uint8_t *public_key, uint8_t *secret_key, const uint8_t *seed, size_t seed_len) {
+#if defined(OQS_ENABLE_SIG_ml_dsa_65_avx2)
+#if defined(OQS_DIST_BUILD)
+	if (OQS_CPU_has_extension(OQS_CPU_EXT_AVX2) && OQS_CPU_has_extension(OQS_CPU_EXT_POPCNT)) {
+#endif /* OQS_DIST_BUILD */
+		return (OQS_STATUS) pqcrystals_ml_dsa_65_avx2_keypair_from_seed(public_key, secret_key, seed, seed_len);
+#if defined(OQS_DIST_BUILD)
+	} else {
+		return (OQS_STATUS) pqcrystals_ml_dsa_65_ref_keypair_from_seed(public_key, secret_key, seed, seed_len);
+	}
+#endif /* OQS_DIST_BUILD */
+#else
+	return (OQS_STATUS) pqcrystals_ml_dsa_65_ref_keypair_from_seed(public_key, secret_key, seed, seed_len);
 #endif
 }
 
