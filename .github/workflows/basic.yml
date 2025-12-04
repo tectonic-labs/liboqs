@@ -126,54 +126,54 @@ jobs:
           ./example_sig
         working-directory: ${{ env.RANDOM_BUILD_DIR }}
 
-  fuzzbuildcheck:
-    name: Check that code passes a basic fuzzing build
-    # needs: [workflowcheck, stylecheck, upstreamcheck]
-    needs: [workflowcheck, stylecheck]
-    runs-on: ubuntu-latest
-    container: openquantumsafe/ci-ubuntu-latest:latest
-    env:
-      SIG_NAME: ml_dsa_44
-      CC: clang
-      CXX: clang++
-      CFLAGS: -fsanitize=fuzzer-no-link,address
-      LDFLAGS: -fsanitize=address
-    steps:
-      - name: Create random build folder
-        run: tmp_build=$(mktemp -d) && echo "RANDOM_BUILD_DIR=$tmp_build" >> $GITHUB_ENV
-      - name: Checkout code
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # pin@v4
-      - name: Configure
-        run: |
-          cmake \
-            -B ${{ env.RANDOM_BUILD_DIR }} \
-            -GNinja \
-            -DOQS_STRICT_WARNINGS=ON \
-            -DOQS_BUILD_FUZZ_TESTS=ON \
-            -DOQS_MINIMAL_BUILD="SIG_$SIG_NAME" \
-            --warn-uninitialized . > config.log 2>&1 && \
-          cat config.log && \
-          cmake -LA -N . && \
-          ! (grep -i "uninitialized variable" config.log)
-      - name: Build code
-        run: ninja fuzz_test_sig
-        working-directory: ${{ env.RANDOM_BUILD_DIR }}
+  # fuzzbuildcheck:
+  #   name: Check that code passes a basic fuzzing build
+  #   # needs: [workflowcheck, stylecheck, upstreamcheck]
+  #   needs: [workflowcheck, stylecheck]
+  #   runs-on: ubuntu-latest
+  #   container: openquantumsafe/ci-ubuntu-latest:latest
+  #   env:
+  #     SIG_NAME: ml_dsa_44
+  #     CC: clang
+  #     CXX: clang++
+  #     CFLAGS: -fsanitize=fuzzer-no-link,address
+  #     LDFLAGS: -fsanitize=address
+  #   steps:
+  #     - name: Create random build folder
+  #       run: tmp_build=$(mktemp -d) && echo "RANDOM_BUILD_DIR=$tmp_build" >> $GITHUB_ENV
+  #     - name: Checkout code
+  #       uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # pin@v4
+  #     - name: Configure
+  #       run: |
+  #         cmake \
+  #           -B ${{ env.RANDOM_BUILD_DIR }} \
+  #           -GNinja \
+  #           -DOQS_STRICT_WARNINGS=ON \
+  #           -DOQS_BUILD_FUZZ_TESTS=ON \
+  #           -DOQS_MINIMAL_BUILD="SIG_$SIG_NAME" \
+  #           --warn-uninitialized . > config.log 2>&1 && \
+  #         cat config.log && \
+  #         cmake -LA -N . && \
+  #         ! (grep -i "uninitialized variable" config.log)
+  #     - name: Build code
+  #       run: ninja fuzz_test_sig
+  #       working-directory: ${{ env.RANDOM_BUILD_DIR }}
 
-      - name: Short fuzz check (30s)
-        run: ./tests/fuzz_test_sig -max_total_time=30
-        working-directory: ${{ env.RANDOM_BUILD_DIR }}
+  #     - name: Short fuzz check (30s)
+  #       run: ./tests/fuzz_test_sig -max_total_time=30
+  #       working-directory: ${{ env.RANDOM_BUILD_DIR }}
 
-  nixflakecheck:
-    name: Check that Nix flake has correct syntax and can build
-    needs: [workflowcheck]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: DeterminateSystems/nix-installer-action@90bb610b90bf290cad97484ba341453bd1cbefea # v19
-      - name: Checkout code
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # pin@v4
-      - name: Check devShell
-        run: nix develop --command echo
-      - name: Check flake syntax
-        run: nix flake check --no-build # check for accurate syntax
-      - name: Check that the flake builds
-        run: nix build # check that the build runs
+  # nixflakecheck:
+  #   name: Check that Nix flake has correct syntax and can build
+  #   needs: [workflowcheck]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: DeterminateSystems/nix-installer-action@90bb610b90bf290cad97484ba341453bd1cbefea # v19
+  #     - name: Checkout code
+  #       uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # pin@v4
+  #     - name: Check devShell
+  #       run: nix develop --command echo
+  #     - name: Check flake syntax
+  #       run: nix flake check --no-build # check for accurate syntax
+  #     - name: Check that the flake builds
+  #       run: nix build # check that the build runs

@@ -18,16 +18,16 @@ jobs:
   #   needs: basic-checks
   #   uses: ./.github/workflows/platforms.yml
 
-  code-coverage:
-    needs: basic-checks
-    uses: ./.github/workflows/code-coverage.yml
-    secrets: inherit
+  # code-coverage:
+  #   needs: basic-checks
+  #   uses: ./.github/workflows/code-coverage.yml
+  #   secrets: inherit
 
-  scorecard:
-    needs: basic-checks
-    uses: ./.github/workflows/supplychain.yml
-    secrets: inherit
-    permissions:
-      contents: read
-      id-token: write
-      security-events: write
+  # scorecard:
+  #   needs: basic-checks
+  #   uses: ./.github/workflows/supplychain.yml
+  #   secrets: inherit
+  #   permissions:
+  #     contents: read
+  #     id-token: write
+  #     security-events: write

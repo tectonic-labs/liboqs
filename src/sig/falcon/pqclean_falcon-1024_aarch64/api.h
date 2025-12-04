@@ -24,6 +24,21 @@ int PQCLEAN_FALCON1024_AARCH64_crypto_sign_keypair(
     uint8_t *pk, uint8_t *sk);
 
 /*
+ * Generate a new key pair using a provided seed. Public key goes into pk[], private key in sk[].
+ * Key sizes are exact (in bytes):
+ *   public (pk): PQCLEAN_FALCON1024_AARCH64_CRYPTO_PUBLICKEYBYTES
+ *   private (sk): PQCLEAN_FALCON1024_AARCH64_CRYPTO_SECRETKEYBYTES
+ *
+ * seed: seed for deterministic key generation. If NULL, uses random seed.
+ *       Caller must ensure seed points to at least 32 bytes.
+ * seed_len: length of the seed in bytes. Must be between 32 and 64.
+
+ * Return value: 0 on success, -1 on error.
+ */
+int PQCLEAN_FALCON1024_AARCH64_crypto_sign_keypair_from_seed(
+    uint8_t *pk, uint8_t *sk, const uint8_t *seed, size_t seed_len);
+
+/*
  * Compute a signature on a provided message (m, mlen), with a given
  * private key (sk). Signature is written in sig[], with length written
  * into *siglen. Signature length is variable; maximum signature length
