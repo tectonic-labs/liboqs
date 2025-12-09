@@ -77,6 +77,18 @@ int crypto_kem_keypair
 (
     unsigned char *pk,
     unsigned char *sk
+)
+{
+    unsigned char seed[32] = {};
+    randombytes(seed, 32);
+    return crypto_kem_keypair_derand(pk, sk, seed);
+}
+
+int crypto_kem_keypair_derand
+(
+    unsigned char *pk,
+    unsigned char *sk,
+    const unsigned char input_seed[32]
 ) {
     int i;
     unsigned char seed[ 33 ] = {64};
@@ -89,7 +101,7 @@ int crypto_kem_keypair
     uint32_t perm[ 1 << GFBITS ]; // random permutation as 32-bit integers
     int16_t pi[ 1 << GFBITS ]; // random permutation
 
-    randombytes(seed + 1, 32);
+    memcpy(&seed[1], input_seed, 32);
 
     while (1) {
         rp = &r[ sizeof(r) - 32 ];

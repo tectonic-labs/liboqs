@@ -23,4 +23,11 @@ int crypto_kem_keypair
     unsigned char *sk
 );
 
+int crypto_kem_keypair_derand
+(
+    unsigned char *pk,
+    unsigned char *sk,
+    const unsigned char seed[32]
+);
+
 #endif
