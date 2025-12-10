@@ -10,8 +10,8 @@
 #define OQS_KEM_classic_mceliece_348864_length_secret_key 6492
 #define OQS_KEM_classic_mceliece_348864_length_ciphertext 96
 #define OQS_KEM_classic_mceliece_348864_length_shared_secret 32
-#define OQS_KEM_classic_mceliece_348864_length_keypair_seed 0
-#define OQS_KEM_classic_mceliece_348864_length_encaps_seed 0
+#define OQS_KEM_classic_mceliece_348864_length_keypair_seed 32
+#define OQS_KEM_classic_mceliece_348864_length_encaps_seed 32
 OQS_KEM *OQS_KEM_classic_mceliece_348864_new(void);
 OQS_API OQS_STATUS OQS_KEM_classic_mceliece_348864_keypair(uint8_t *public_key, uint8_t *secret_key);
 OQS_API OQS_STATUS OQS_KEM_classic_mceliece_348864_keypair_derand(uint8_t *public_key, uint8_t *secret_key, const uint8_t *seed);
