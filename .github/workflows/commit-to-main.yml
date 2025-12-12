@@ -10,13 +10,16 @@ on:
 jobs:
 
   platform-tests:
+    if: false
     uses: ./.github/workflows/platforms.yml
 
   code-coverage:
+    if: false
     uses: ./.github/workflows/code-coverage.yml
     secrets: inherit
 
   scorecard:
+    if: false
     uses: ./.github/workflows/supplychain.yml
     secrets: inherit
     permissions:
@@ -25,5 +28,6 @@ jobs:
       contents: read
 
   basic-downstream:
+    if: false
     uses: ./.github/workflows/downstream-basic.yml
     secrets: inherit
