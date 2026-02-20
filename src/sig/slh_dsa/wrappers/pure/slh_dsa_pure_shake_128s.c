@@ -4,6 +4,7 @@
 
 #include "../../sig_slh_dsa.h"
 #include "../../slh_dsa_c/slh_dsa.h"
+#include "../../slh_dsa_c/slh_param.h"
 #include "../../slh_dsa_c/slh_prehash.h"
 #include <oqs/oqs.h>
 
@@ -29,7 +30,7 @@ OQS_SIG *OQS_SIG_slh_dsa_pure_shake_128s_new(void) {
 	sig->length_signature = OQS_SIG_slh_dsa_pure_shake_128s_length_signature;
 
 	sig->keypair = OQS_SIG_slh_dsa_pure_shake_128s_keypair;
-	sig->keypair_from_seed = NULL;
+	sig->keypair_from_seed = OQS_SIG_slh_dsa_pure_shake_128s_keypair_from_seed;
 	sig->sign = OQS_SIG_slh_dsa_pure_shake_128s_sign;
 	sig->verify = OQS_SIG_slh_dsa_pure_shake_128s_verify;
 	sig->sign_with_ctx_str = OQS_SIG_slh_dsa_pure_shake_128s_sign_with_ctx_str;
@@ -49,6 +50,18 @@ OQS_API OQS_STATUS OQS_SIG_slh_dsa_pure_shake_128s_keypair(uint8_t *public_key, 
 	const slh_param_t *prm = &slh_dsa_shake_128s;
 	int(*rbg)(uint8_t *x, size_t xlen) = slh_randombytes;
 	return slh_keygen(secret_key, public_key, rbg, prm);
+}
+
+OQS_API OQS_STATUS OQS_SIG_slh_dsa_pure_shake_128s_keypair_from_seed(
+        uint8_t *public_key, uint8_t *secret_key,
+        const uint8_t *seed, size_t seed_len) {
+
+	const slh_param_t *prm = &slh_dsa_shake_128s;
+	if (seed_len != 3 * prm->n) {
+		return OQS_ERROR;
+	}
+	return slh_keygen_internal(secret_key, public_key,
+	                           seed, seed + prm->n, seed + 2 * prm->n, prm);
 }
 
 OQS_API OQS_STATUS OQS_SIG_slh_dsa_pure_shake_128s_sign(uint8_t *signature, size_t *signature_len,
