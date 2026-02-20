@@ -48,7 +48,27 @@ extern int PQCLEAN_FALCONPADDED512_AVX2_crypto_sign_keypair_from_seed(uint8_t *p
 #endif
 
 const uint8_t SEED_LENGTH = 32;
+const uint8_t MAX_SEED_LENGTH = 96;  // Maximum seed length for SLH-DSA (256 variants need 96 bytes)
 const uint8_t ENTROPY_INPUT_LENGTH = 48;
+
+// Determine the required seed length based on algorithm name
+static size_t get_seed_length(const char *method_name) {
+	// SLH-DSA requires 3 * n bytes where n is the hash size
+	// 128 variants: n=16, seed_len=48
+	// 192 variants: n=24, seed_len=72
+	// 256 variants: n=32, seed_len=96
+	if (strncmp(method_name, "SLH_DSA_PURE_", 13) == 0) {
+		if (strstr(method_name, "_128") != NULL) {
+			return 48;  // 3 * 16
+		} else if (strstr(method_name, "_192") != NULL) {
+			return 72;  // 3 * 24
+		} else if (strstr(method_name, "_256") != NULL) {
+			return 96;  // 3 * 32
+		}
+	}
+	// Default for Falcon and ML-DSA
+	return SEED_LENGTH;
+}
 
 static OQS_STATUS test_keypair_from_seed_twice(const char *method_name) {
 	OQS_SIG *sig = NULL;
@@ -56,7 +76,8 @@ static OQS_STATUS test_keypair_from_seed_twice(const char *method_name) {
 	uint8_t *secret_key1 = NULL;
 	uint8_t *public_key2 = NULL;
 	uint8_t *secret_key2 = NULL;
-	uint8_t seed[SEED_LENGTH];
+	uint8_t seed[MAX_SEED_LENGTH];
+	size_t seed_len;
 	OQS_STATUS rc;
 	OQS_KAT_PRNG *prng = NULL;
 	uint8_t entropy_input[ENTROPY_INPUT_LENGTH];
@@ -105,22 +126,25 @@ static OQS_STATUS test_keypair_from_seed_twice(const char *method_name) {
 		goto err;
 	}
 
+	// Determine the required seed length for this algorithm
+	seed_len = get_seed_length(method_name);
+
 	// Generate a deterministic seed using KAT PRNG
-	OQS_randombytes(seed, SEED_LENGTH);
+	OQS_randombytes(seed, seed_len);
 
 	printf("================================================================================\n");
 	printf("Testing %s keypair_from_seed determinism\n", method_name);
 	printf("Version source: %s\n", sig->alg_version);
 	printf("================================================================================\n");
-	printf("Generated seed (%u bytes):\n", SEED_LENGTH);
-	for (size_t i = 0; i < SEED_LENGTH; i++) {
+	printf("Generated seed (%zu bytes):\n", seed_len);
+	for (size_t i = 0; i < seed_len; i++) {
 		printf("%02x", seed[i]);
 	}
 	printf("\n\n");
 
 	// First keypair generation
 	printf("Generating first keypair with seed...\n");
-	rc = OQS_SIG_keypair_from_seed(sig, public_key1, secret_key1, seed, SEED_LENGTH);
+	rc = OQS_SIG_keypair_from_seed(sig, public_key1, secret_key1, seed, seed_len);
 	if (rc != OQS_SUCCESS) {
 		fprintf(stderr, "[test_keypair_seeded_twice] First OQS_SIG_keypair_from_seed failed\n");
 		goto err;
@@ -129,7 +153,7 @@ static OQS_STATUS test_keypair_from_seed_twice(const char *method_name) {
 
 	// Second keypair generation with the same seed
 	printf("Generating second keypair with same seed...\n");
-	rc = OQS_SIG_keypair_from_seed(sig, public_key2, secret_key2, seed, SEED_LENGTH);
+	rc = OQS_SIG_keypair_from_seed(sig, public_key2, secret_key2, seed, seed_len);
 	if (rc != OQS_SUCCESS) {
 		fprintf(stderr, "[test_keypair_seeded_twice] Second OQS_SIG_keypair_from_seed failed\n");
 		goto err;
@@ -355,7 +379,7 @@ int main(void) {
 	print_system_info();
 
 	// List of algorithms to test
-	const char *falcon_algorithms[] = {
+	const char *algorithms[] = {
 		"Falcon-512",
 		"Falcon-1024",
 		"Falcon-padded-512",
@@ -363,14 +387,26 @@ int main(void) {
 		"ML-DSA-44",
 		"ML-DSA-65",
 		"ML-DSA-87",
+		"SLH_DSA_PURE_SHA2_128S",
+		"SLH_DSA_PURE_SHA2_128F",
+		"SLH_DSA_PURE_SHA2_192S",
+		"SLH_DSA_PURE_SHA2_192F",
+		"SLH_DSA_PURE_SHA2_256S",
+		"SLH_DSA_PURE_SHA2_256F",
+		"SLH_DSA_PURE_SHAKE_128S",
+		"SLH_DSA_PURE_SHAKE_128F",
+		"SLH_DSA_PURE_SHAKE_192S",
+		"SLH_DSA_PURE_SHAKE_192F",
+		"SLH_DSA_PURE_SHAKE_256S",
+		"SLH_DSA_PURE_SHAKE_256F",
 		NULL  // Sentinel
 	};
 
 	OQS_STATUS overall_result = OQS_SUCCESS;
 
 	// Test each Falcon variant (Falcon-512 and Falcon-padded-512)
-	for (size_t i = 0; falcon_algorithms[i] != NULL; i++) {
-		const char *alg_name = falcon_algorithms[i];
+	for (size_t i = 0; algorithms[i] != NULL; i++) {
+		const char *alg_name = algorithms[i];
 
 		printf("\n\n");
 		printf("################################################################################\n");
